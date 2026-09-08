@@ -1,0 +1,56 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.env.development
+.env.production
+backend/.env
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── added for GitHub init (2026-09-09) ──
+# build output
+/backend/dist/
+/backend/dist.zip
+/dist.zip
+
+# env files — keep only *.example
+.env.*
+/backend/.env
+/backend/.env.*
+!.env.example
+!/backend/.env.example
+
+# local tooling settings
+/.claude/settings.local.json
+
+# large local artifacts (root only) — DB dumps, backups, archives, docs
+/accj7125_accesstansi*.sql
+/backup-*.json
+/*.zip
+/nul
+/New folder/
+/*.pdf
+
+# account recovery / local editor tooling
+/backup_codes.csv
+/.claude/

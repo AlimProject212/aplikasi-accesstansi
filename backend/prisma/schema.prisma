@@ -1,0 +1,214 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPERADMIN
+  ADMIN
+  SUPERVISOR
+  ACCOUNTANT
+  VIEWER
+}
+
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum CashFlowCategory {
+  OPERATING
+  INVESTING
+  FINANCING
+}
+
+enum ContactType {
+  CUSTOMER
+  VENDOR
+  BOTH
+}
+
+enum JournalStatus {
+  DRAFT
+  POSTED
+  VOID
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(ACCOUNTANT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  canManageUsers    Boolean @default(false)
+  canManageSettings Boolean @default(false)
+  canManageCOA      Boolean @default(false)
+  canEntryJournal   Boolean @default(true)
+  canApproveJournal Boolean @default(false)
+  canDeleteJournal  Boolean @default(false)
+  canViewReports    Boolean @default(true)
+
+  journals JournalEntry[]
+
+  @@map("users")
+}
+
+// ─── COMPANY SETTINGS (singleton id=1) ───────────────────────────────────────
+
+model CompanyProfile {
+  id        Int      @id @default(autoincrement())
+  name      String   @default("Perusahaan Saya")
+  address   String   @db.Text
+  city      String   @default("")
+  phone     String   @default("")
+  email     String   @default("")
+  website   String?
+  taxId     String?
+  logoUrl   String?  @db.LongText
+  updatedAt DateTime @updatedAt
+
+  @@map("company_profile")
+}
+
+model AppConfig {
+  id                   Int      @id @default(autoincrement())
+  lockDate             String   @default("")
+  fiscalYearStartMonth Int      @default(1)
+  activePeriod         String   @default("")
+  updatedAt            DateTime @updatedAt
+
+  @@map("app_config")
+}
+
+// ─── ACCOUNTING PERIODS ───────────────────────────────────────────────────────
+
+model FiscalYear {
+  id       Int     @id @default(autoincrement())
+  year     String  @unique
+  isActive Boolean @default(false)
+
+  lockedMonths LockedMonth[]
+
+  @@map("fiscal_years")
+}
+
+model LockedMonth {
+  id           Int        @id @default(autoincrement())
+  yearMonth    String     @unique
+  fiscalYearId Int
+  fiscalYear   FiscalYear @relation(fields: [fiscalYearId], references: [id], onDelete: Cascade)
+
+  @@map("locked_months")
+}
+
+// ─── CHART OF ACCOUNTS ────────────────────────────────────────────────────────
+
+model Account {
+  id               String            @id @default(uuid())
+  code             String            @unique
+  name             String
+  type             AccountType
+  level            Int
+  parentId         String?
+  parent           Account?          @relation("AccountParent", fields: [parentId], references: [id])
+  children         Account[]         @relation("AccountParent")
+  balance          Float             @default(0)
+  isHeader         Boolean           @default(false)
+  cashFlowCategory CashFlowCategory?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  journalLines JournalLine[]
+  budgets      AccountBudget[]
+
+  @@map("accounts")
+}
+
+// ─── CONTACTS ─────────────────────────────────────────────────────────────────
+
+model Contact {
+  id        String      @id @default(uuid())
+  name      String
+  type      ContactType
+  email     String?
+  phone     String?
+  address   String?     @db.Text
+  taxId     String?
+  notes     String?     @db.Text
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  journalLines JournalLine[]
+
+  @@map("contacts")
+}
+
+// ─── BUDGETS ──────────────────────────────────────────────────────────────────
+
+model AccountBudget {
+  id           Int     @id @default(autoincrement())
+  accountId    String
+  account      Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  fiscalYear   String
+  annualAmount Float   @default(0)
+
+  @@unique([accountId, fiscalYear])
+  @@map("account_budgets")
+}
+
+// ─── JOURNAL ENTRIES ─────────────────────────────────────────────────────────
+
+model JournalEntry {
+  id              String        @id @default(uuid())
+  transactionDate DateTime
+  referenceNumber String        @unique
+  description     String        @db.Text
+  totalAmount     Float
+  status          JournalStatus @default(DRAFT)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  createdById     Int
+  createdBy       User          @relation(fields: [createdById], references: [id])
+
+  lines JournalLine[]
+
+  @@index([transactionDate])
+  @@index([status])
+  @@map("journal_entries")
+}
+
+model JournalLine {
+  id          String       @id @default(uuid())
+  journalId   String
+  journal     JournalEntry @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  accountId   String
+  account     Account      @relation(fields: [accountId], references: [id])
+  accountName String
+  debit       Float        @default(0)
+  credit      Float        @default(0)
+  contactId   String?
+  contact     Contact?     @relation(fields: [contactId], references: [id])
+  contactName String?
+  description String?      @db.Text
+  sortOrder   Int          @default(0)
+
+  @@index([journalId])
+  @@index([accountId])
+  @@map("journal_lines")
+}

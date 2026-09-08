@@ -1,0 +1,311 @@
+====================================================================
+PANDUAN LENGKAP — ADD-ON MODUL PERSEDIAAN & DAGANG (AccessTansi)
+====================================================================
+Update terakhir: 19 Agustus 2026
+
+
+DAFTAR ISI
+----------
+1. Persiapan Server (sekali di awal)
+2. Aktivasi Add-on
+3. Konfigurasi Wajib — Pengaturan Akun
+4. Setup Data Master
+5. Alur Pembelian (Purchasing)
+6. Alur Penjualan B2B (Faktur Penjualan)
+7. Alur Kasir / Retail (POS)
+8. Laporan
+9. Fitur Pin ke Sidebar
+10. Generate Data Dummy (buat testing cepat)
+11. Batasan yang Perlu Diketahui
+
+
+====================================================================
+1. PERSIAPAN SERVER (SEKALI DI AWAL)
+====================================================================
+
+Jalankan migration SQL berikut di phpMyAdmin, URUT SESUAI NOMOR
+(tiap file bergantung ke tabel yang dibuat file sebelumnya):
+
+  1. backend/scripts/migration-add-inventory-module.sql   (Fase 0 — Fondasi)
+  2. backend/scripts/migration-add-stock-engine.sql        (Fase 1 — Kartu Stok)
+  3. backend/scripts/migration-add-purchasing.sql          (Fase 2 — Pembelian)
+  4. backend/scripts/migration-add-sales.sql                (Fase 3 — Penjualan)
+  5. backend/scripts/migration-add-pos.sql                  (Fase 4 — POS)
+
+  Kalau sebelumnya sempat kena error "Illegal mix of collations",
+  jalankan juga:
+  6. backend/scripts/migration-fix-collation.sql
+
+  Kalau ada company lain yang sudah pakai modul Manajemen Dana /
+  Repository Dokumen sebelum add-on ini dipasang (supaya tidak
+  ke-lock begitu backend baru live):
+  7. backend/scripts/migration-grandfather-old-addons.sql
+
+Setelah migration selesai:
+  - Upload isi backend/dist/ ke folder Node.js app di Rumah Web
+  - Restart Node.js app lewat cPanel
+  - Upload isi dist/ (folder root) ke public_html
+
+
+====================================================================
+2. AKTIVASI ADD-ON
+====================================================================
+
+Modul ini terdaftar sebagai add-on berbayar (slug: persediaan-dagang)
+di sistem billing yang sudah ada. Aturannya:
+
+  - Company harus di paket PROFESSIONAL dulu (Starter tidak bisa beli
+    add-on apapun — ini dicek di server, bukan cuma disembunyikan di
+    tampilan)
+  - Setelah itu, beli add-on "Persediaan & Dagang" lewat halaman
+    Billing
+
+Cara cepat untuk testing (skip proses bayar beneran), insert manual
+di phpMyAdmin:
+
+  INSERT INTO company_addons (companyId, moduleId, status, startDate, endDate)
+  VALUES (<companyId_anda>, 3, 'active', CURDATE(), DATE_ADD(CURDATE(), INTERVAL 1 YEAR));
+
+  (moduleId 3 = persediaan-dagang, sudah otomatis terdaftar dari
+  migration Fase 0)
+
+
+====================================================================
+3. KONFIGURASI WAJIB — PENGATURAN AKUN
+====================================================================
+
+SEBELUM bisa posting transaksi apapun (Penerimaan Barang, Faktur,
+Penyesuaian Stok, POS), akun-akun ini WAJIB diisi dulu:
+
+  Lokasi: Menu "Kartu Stok & Opname" → tab "Pengaturan Akun"
+  (atau lewat Pengaturan → Persediaan & Dagang → Kartu Stok & Opname)
+
+  Akun Jurnal Otomatis:
+    - Akun Persediaan Barang Dagang     (ASSET)
+    - Akun Selisih Stok                 (EXPENSE) — dipakai Penyesuaian Stok
+    - Akun Hutang Usaha                 (LIABILITY) — dipakai Penerimaan Barang
+    - Akun Piutang Usaha                (ASSET) — dipakai Faktur Penjualan
+    - Akun Pendapatan Penjualan         (REVENUE)
+    - Akun Harga Pokok Penjualan (HPP)  (EXPENSE)
+    - Akun PPN Keluaran                 (LIABILITY) — hanya wajib kalau
+                                          transaksi ada pajaknya
+
+  Akun Pembayaran POS (Kasir):
+    - Akun untuk Tunai
+    - Akun untuk Transfer
+    - Akun untuk QRIS
+    - Akun untuk Kartu Debit/Kredit
+
+  Kalau akun yang dibutuhkan belum ada di Daftar Akun (COA), buat
+  dulu manual lewat menu "Daftar Akun" sebelum bisa dipilih di sini.
+
+
+====================================================================
+4. SETUP DATA MASTER
+====================================================================
+
+Lokasi: Menu "Persediaan & Dagang" (4 tab: Barang, Kategori, Satuan,
+Gudang)
+
+  4.1 Kategori & Satuan
+      - Satuan default (pcs, box, lsn, kg, dus) dan 1 Gudang Utama
+        otomatis dibuat saat pertama kali dibuka — tidak perlu setup
+        manual kalau default itu cukup
+      - Tambah kategori sesuai kebutuhan (mis. Sembako, Elektronik)
+
+  4.2 Gudang
+      - Minimal harus ada 1 gudang (default sudah otomatis ada)
+      - Gudang default tidak bisa dihapus
+
+  4.3 Barang
+      - Isi SKU (wajib, unik), nama, kategori, satuan, harga beli,
+        harga jual, stok minimum
+      - Barcode opsional (untuk scan di kasir POS)
+      - Stok awal produk baru selalu 0 — stok cuma bisa masuk lewat
+        Penerimaan Barang (Pembelian) atau Penyesuaian Stok, TIDAK
+        bisa diisi manual di form produk
+
+  4.4 Kontak Vendor / Customer
+      - Lokasi: Pengaturan → Data Master → Kontak
+      - Tandai tipe kontak sebagai VENDOR (untuk supplier di modul
+        Pembelian) atau CUSTOMER (untuk Faktur Penjualan)
+
+
+====================================================================
+5. ALUR PEMBELIAN (PURCHASING)
+====================================================================
+
+Lokasi: Menu "Pembelian" (2 tab: Purchase Order, Penerimaan Barang &
+Hutang)
+
+  Langkah:
+  1. Buat Purchase Order (PO) — pilih vendor, tanggal, tambah produk
+     + qty + harga. Status awal: DRAFT
+  2. Klik "Kirim ke Vendor" → status jadi ORDERED
+  3. Buka tab "Penerimaan Barang & Hutang" → klik "Buat Penerimaan"
+     → pilih PO yang barusan dibuat (baris otomatis terisi sisa qty
+     yang belum diterima), atau input manual tanpa PO
+  4. Klik "Posting" pada Penerimaan Barang → SAAT INI TERJADI
+     OTOMATIS:
+       - Stok produk bertambah (pakai HPP rata-rata bergerak)
+       - Jurnal Dr Persediaan / Cr Hutang Usaha dibuat & langsung
+         POSTED
+       - Status PO berubah jadi PARTIAL / RECEIVED tergantung sisa
+  5. Bayar hutang (bisa dicicil / partial) — pilih akun Kas/Bank
+     sumber dana → jurnal Dr Hutang Usaha / Cr Kas-Bank otomatis
+     dibuat
+
+  Catatan: Penerimaan Barang & Faktur Penjualan yang SUDAH diposting
+  TIDAK BISA di-void/dibatalkan dari UI. Kalau salah posting,
+  koreksi manual lewat Jurnal Umum (SUPERADMIN).
+
+
+====================================================================
+6. ALUR PENJUALAN B2B (FAKTUR PENJUALAN)
+====================================================================
+
+Lokasi: Menu "Faktur Penjualan"
+
+  Langkah:
+  1. Klik "Buat Faktur" — pilih customer, gudang, tanggal faktur &
+     jatuh tempo, tambah produk + qty + harga jual, diskon & pajak
+     opsional
+  2. Klik "Posting" → OTOMATIS:
+       - Stok produk berkurang (HPP diambil dari rata-rata saat itu)
+       - 1 jurnal gabungan: Dr Piutang Usaha / Cr Pendapatan
+         Penjualan / Cr PPN Keluaran (jika ada) / Dr HPP /
+         Cr Persediaan — semua balance dalam satu jurnal
+  3. Terima pelunasan (bisa dicicil / partial) — pilih akun
+     Kas/Bank tujuan → jurnal Dr Kas-Bank / Cr Piutang Usaha
+     otomatis dibuat
+
+
+====================================================================
+7. ALUR KASIR / RETAIL (POS)
+====================================================================
+
+Lokasi: Menu "Point of Sales (Kasir)" — role KARYAWAN dengan
+izin "Operate POS" bisa akses menu ini tanpa perlu akses modul
+akuntansi lain.
+
+  Langkah:
+  1. Buka Shift — pilih gudang, input modal kas awal
+  2. Cari produk (nama/SKU/scan barcode) → Enter atau klik untuk
+     masuk keranjang
+  3. Atur qty, diskon, pajak → pilih metode bayar (Tunai / Transfer
+     / QRIS / Kartu) → input jumlah bayar → kembalian dihitung
+     otomatis
+  4. Klik "Bayar" → transaksi LANGSUNG FINAL (tidak ada draft) →
+     OTOMATIS:
+       - Stok berkurang
+       - 1 jurnal gabungan: Dr Kas/Bank (sesuai metode bayar) /
+         Cr Pendapatan Penjualan / Cr PPN (jika ada) / Dr HPP /
+         Cr Persediaan
+  5. Struk bisa dicetak (tombol Cetak → browser print)
+  6. Void transaksi — hanya role SUPERVISOR / ADMIN / SUPERADMIN,
+     lewat tombol "Riwayat" di halaman POS. Void akan
+     mengembalikan stok + membuat jurnal pembalik otomatis
+  7. Tutup Shift — input kas aktual hasil hitung fisik di laci →
+     sistem menampilkan selisih (kas seharusnya vs kas aktual)
+
+
+====================================================================
+8. LAPORAN
+====================================================================
+
+  8.1 Kartu Stok
+      Lokasi: Kartu Stok & Opname → tab Kartu Stok
+      Riwayat mutasi stok per produk + saldo qty & nilai. Juga
+      menampilkan ringkasan Nilai Persediaan Total.
+
+  8.2 Penyesuaian Stok (Opname)
+      Lokasi: Kartu Stok & Opname → tab Penyesuaian Stok
+      Buat draft opname (input stok fisik aktual per produk),
+      selisih terhitung otomatis, lalu "Posting" untuk
+      mengoreksi stok sistem + membuat jurnal selisih.
+
+  8.3 Stok Menipis
+      Lokasi: Kartu Stok & Opname → tab Laporan
+      Daftar produk yang stoknya sudah di/bawah batas minimum.
+
+  8.4 Laba Kotor per Produk
+      Lokasi: Kartu Stok & Opname → tab Laporan
+      Gabungan data dari Faktur Penjualan (B2B) + POS (retail),
+      bisa difilter per rentang tanggal. Menampilkan qty terjual,
+      pendapatan, HPP, laba kotor, dan margin % per produk.
+
+
+====================================================================
+9. FITUR PIN KE SIDEBAR
+====================================================================
+
+Semua item di section "Persediaan & Dagang" (juga "Manajemen Dana"
+dan "Repository Dokumen") bisa di-klik-kanan dari halaman Pengaturan
+untuk dipin ke Sidebar utama.
+
+  - Klik kanan item → pilih "Tampilkan di Sidebar Utama"
+  - Item akan muncul di Sidebar dikelompokkan per modul (mis. pin
+    "Pembelian" → muncul grup "Persediaan & Dagang" di Sidebar,
+    isinya cuma "Pembelian")
+  - Klik grup di Sidebar untuk expand/collapse
+  - Klik item yang dipin → LANGSUNG buka halaman itu full-page
+    (bukan nested di dalam Pengaturan lagi)
+  - Klik kanan lagi (dari Pengaturan atau dari Sidebar) untuk lepas
+    pin
+  - Preferensi pin disimpan di localStorage browser (per user/per
+    device, bukan data bisnis)
+
+  Rekomendasi: pin menu "Point of Sales (Kasir)" untuk user dengan
+  role KARYAWAN, supaya begitu login langsung ada akses cepat ke
+  kasir tanpa perlu masuk ke Pengaturan dulu.
+
+
+====================================================================
+10. GENERATE DATA DUMMY (BUAT TESTING CEPAT)
+====================================================================
+
+Lokasi: Menu "Persediaan & Dagang" (tab Barang) → tombol
+"Generate Dummy Lengkap" di kanan atas
+
+Sekali klik akan otomatis (lewat API asli, bukan insert SQL
+langsung — supaya stok, kartu stok, dan jurnal semuanya konsisten):
+
+  1. Bikin 3 kategori (Sembako, Elektronik, Alat Tulis Kantor)
+  2. Bikin 12 produk contoh (harga beli & jual realistis)
+  3. Bikin 1 vendor ("CV Sumber Grosir") & 1 customer
+     ("Toko Berkah Jaya") kalau belum ada
+  4. Bikin & posting 1 Purchase Order + Penerimaan Barang penuh
+     (stok semua produk jadi terisi) + bayar 50% hutangnya
+  5. Bikin & posting 1 Faktur Penjualan (6 produk) + terima 60%
+     pelunasannya
+  6. Buka shift kasir (kalau belum ada yang aktif) + jalankan 3
+     transaksi POS contoh (Tunai/QRIS/Transfer)
+
+  SYARAT: Pengaturan Akun (lihat bagian 3) harus sudah diisi
+  lengkap dulu, kalau belum tombol ini akan menampilkan pesan
+  error yang jelas soal akun mana yang belum diatur.
+
+  Aman diklik berkali-kali — kategori/produk/kontak yang sudah ada
+  tidak akan diduplikasi, tapi PO/Faktur/transaksi POS akan selalu
+  menambah data baru tiap kali diklik (bukan sekali pakai).
+
+
+====================================================================
+11. BATASAN YANG PERLU DIKETAHUI
+====================================================================
+
+  - Stok dilacak AGREGAT PER PERUSAHAAN, bukan per gudang — field
+    gudang di setiap transaksi baru sebatas metadata/pencatatan,
+    belum benar-benar memisahkan saldo stok antar lokasi
+  - Metode HPP: Rata-rata Bergerak (Moving Average) — bukan FIFO,
+    jadi tidak cocok untuk barang yang butuh lacak per-batch/
+    tanggal kadaluarsa ketat
+  - Penerimaan Barang & Faktur Penjualan yang sudah POSTED tidak
+    bisa di-void dari UI (POS transaksi BISA di-void). Kalau salah
+    posting, koreksi manual lewat Jurnal Umum
+  - Belum ada cetak PDF resmi untuk Faktur Penjualan B2B (POS
+    sudah ada cetak struk lewat browser print)
+  - Belum ada widget ringkasan di Dashboard utama — laporan stok
+    menipis & laba kotor baru bisa dilihat lewat tab Laporan
+  - Produk belum mendukung varian (ukuran/warna dalam 1 nama
+    produk) — 1 SKU = 1 produk flat

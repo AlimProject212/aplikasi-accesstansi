@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Daftar AccessTansi — Buat akun perusahaan gratis dan mulai kelola keuangan bisnis Anda hari ini.">
+  <title>Daftar — AccessTansi</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── DARK (default) ── */
+    :root {
+      --bg:           #0d0d0d;
+      --bg2:          #131313;
+      --surface:      #1c1818;
+      --surface2:     #231e1e;
+      --border:       #332a2a;
+      --border-soft:  #2a2222;
+      --border-light: #4a3535;
+      --text:         #f2ebe8;
+      --text-muted:   #b89898;
+      --text-faint:   #6e5050;
+      --gold:         #d44040;
+      --gold-light:   #e85858;
+      --gold-dim:     #8a2828;
+      --gold-bg:      rgba(212,64,64,.09);
+      --gold-border:  rgba(212,64,64,.26);
+      --green-pos:    #5dc882;
+      --red-neg:      #e07070;
+      --white:        #f8f0f0;
+      --r:            12px;
+      --r-sm:         8px;
+      --serif:        'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+      --sans:         'Segoe UI',system-ui,-apple-system,Helvetica,sans-serif;
+      --mono:         'Courier New',Courier,monospace;
+    }
+
+    /* ── LIGHT ── */
+    :root.light {
+      --bg:           #eeeaea;
+      --bg2:          #e4e0e0;
+      --surface:      #ffffff;
+      --surface2:     #fdf2f2;
+      --border:       #e0d0d0;
+      --border-soft:  #ece4e4;
+      --border-light: #d0b8b8;
+      --text:         #2a1818;
+      --text-muted:   #7a5858;
+      --text-faint:   #b08888;
+      --gold:         #a12c2f;
+      --gold-light:   #c43530;
+      --gold-dim:     #e0b8b8;
+      --gold-bg:      rgba(161,44,47,.07);
+      --gold-border:  rgba(161,44,47,.22);
+      --green-pos:    #1a8c4e;
+      --red-neg:      #c0404a;
+      --white:        #1a0e0e;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    body {
+      background-image:
+        linear-gradient(var(--border-soft) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+      background-size: 52px 52px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+    /* ════════════════════
+       TOP BAR
+    ════════════════════ */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 2rem;
+      flex-shrink: 0;
+    }
+    .topbar-logo {
+      display: flex; align-items: center; gap: .65rem;
+      text-decoration: none;
+    }
+    .topbar-logo img { width: 32px; height: 32px; object-fit: contain; }
+    .topbar-logo-name {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      color: var(--white);
+      letter-spacing: .03em;
+    }
+    .topbar-right { display: flex; align-items: center; gap: .9rem; }
+    .topbar-login {
+      font-size: .82rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .topbar-login:hover { color: var(--gold); }
+
+    #themeToggle {
+      background: none;
+      border: 1px solid var(--border-light);
+      cursor: pointer;
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      transition: all .22s;
+      flex-shrink: 0;
+    }
+    #themeToggle:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+
+    /* ════════════════════
+       MAIN AREA
+    ════════════════════ */
+    .main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1.25rem 2rem;
+    }
+
+    /* ════════════════════
+       CARD
+    ════════════════════ */
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 2.4rem 2.6rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px var(--border-soft),
+        0 24px 64px rgba(0,0,0,.28);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #7a1b1e 0%, var(--gold) 50%, #7a1b1e 100%);
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -40px; left: 50%; transform: translateX(-50%);
+      width: 280px; height: 100px;
+      background: radial-gradient(ellipse, rgba(161,44,47,.1) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+    .card > * { position: relative; z-index: 1; }
+
+    @media(max-width:520px) {
+      .card { padding: 2rem 1.5rem; border-radius: 14px; }
+      .topbar { padding: .9rem 1.25rem; }
+    }
+
+    /* ── Card header ── */
+    .card-head { margin-bottom: 1.6rem; }
+    .card-title {
+      font-family: var(--serif);
+      font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+      color: var(--white);
+      font-weight: 400;
+      letter-spacing: -.02em;
+      margin-bottom: .4rem;
+      line-height: 1.2;
+    }
+    .card-sub {
+      font-size: .86rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .card-sub a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    .card-sub a:hover { text-decoration: underline; }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border-soft);
+      margin: 1.4rem 0 1.6rem;
+    }
+
+    /* ── Form fields ── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: .95rem;
+    }
+    .form-label {
+      font-size: .83rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: .38rem;
+    }
+    .req { color: var(--gold); margin-left: .1rem; }
+
+    .form-input {
+      padding: .7rem .95rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text);
+      font-size: .93rem;
+      font-family: var(--sans);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      width: 100%;
+    }
+    .form-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-bg);
+      background: var(--surface);
+    }
+    .form-input::placeholder { color: var(--text-faint); }
+    .form-input.err {
+      border-color: var(--red-neg);
+      box-shadow: 0 0 0 3px rgba(224,112,112,.1);
+    }
+
+    /* ── Password show/hide ── */
+    .pw-wrap { position: relative; }
+    .pw-wrap .form-input { padding-right: 2.8rem; }
+    .pw-toggle {
+      position: absolute;
+      right: .75rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none;
+      cursor: pointer; color: var(--text-faint);
+      padding: .2rem; line-height: 1;
+      transition: color .2s;
+    }
+    .pw-toggle:hover { color: var(--text-muted); }
+
+    /* ── Alert box ── */
+    .alert {
+      padding: .75rem 1rem;
+      border-radius: var(--r-sm);
+      font-size: .84rem;
+      line-height: 1.55;
+      margin-bottom: .9rem;
+      display: none;
+      align-items: flex-start;
+      gap: .5rem;
+    }
+    .alert.is-err {
+      background: rgba(224,112,112,.09);
+      border: 1px solid rgba(224,112,112,.28);
+      color: var(--red-neg);
+      display: flex;
+    }
+    .alert-ico { flex-shrink: 0; font-size: .9rem; margin-top: .05rem; }
+
+    /* ── Terms checkbox ── */
+    .terms-wrap {
+      margin: 1.1rem 0 .6rem;
+    }
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      cursor: pointer;
+    }
+    .terms-row input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      border: 1.5px solid var(--border-light);
+      border-radius: 3px;
+      background: var(--surface2);
+      cursor: pointer;
+      margin-top: .22rem;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .terms-row input[type="checkbox"]:checked {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .terms-row input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px; top: 1.5px;
+      width: 5px; height: 9px;
+      border: 1.5px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(42deg);
+    }
+    .terms-row input[type="checkbox"].err {
+      border-color: var(--red-neg);
+    }
+    .terms-lbl {
+      font-size: .86rem;
+      color: var(--text);
+      line-height: 1.5;
+      user-select: none;
+    }
+    .terms-lbl a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    .terms-lbl a:hover { text-decoration: underline; }
+
+    /* Error hint bawah checkbox — persis kayak Mekari */
+    .terms-hint {
+      margin-top: .45rem;
+      margin-left: 1.6rem;
+      font-size: .82rem;
+      color: var(--gold);
+      line-height: 1.5;
+      display: none;
+    }
+    .terms-hint.show { display: block; }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      width: 100%;
+      padding: .85rem 1.5rem;
+      background: linear-gradient(135deg, #a12c2f 0%, #7a1b1e 100%);
+      color: #f5eaea;
+      border: none;
+      border-radius: var(--r-sm);
+      font-size: .96rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: all .22s;
+      box-shadow: 0 4px 18px rgba(161,44,47,.32);
+      display: flex; align-items: center; justify-content: center; gap: .55rem;
+      margin-top: 1rem;
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(161,44,47,.5);
+    }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(245,234,234,.3);
+      border-top-color: #f5eaea;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Masuk link ── */
+    .card-foot {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: .82rem;
+      color: var(--text-faint);
+    }
+    .card-foot a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    .card-foot a:hover { text-decoration: underline; }
+
+    /* ════════════════════
+       SUCCESS STATE
+    ════════════════════ */
+    #successState {
+      display: none;
+      text-align: center;
+      padding: 1.2rem 0;
+    }
+    .success-ico {
+      font-size: 3.2rem;
+      line-height: 1;
+      margin-bottom: 1.1rem;
+      animation: popIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.4); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .success-h {
+      font-family: var(--serif);
+      font-size: 1.6rem;
+      color: var(--white);
+      font-weight: 400;
+      margin-bottom: .6rem;
+    }
+    .success-p {
+      font-size: .88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 1.7rem;
+    }
+    .success-p strong { color: var(--text); }
+
+    /* Company ID box */
+    .cid-box {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: var(--r-sm);
+      padding: 1.1rem 1.4rem;
+      margin: 1rem 0 1.5rem;
+      text-align: left;
+    }
+    .cid-label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--gold);
+      font-weight: 600;
+      margin-bottom: .45rem;
+    }
+    .cid-row {
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+    }
+    .cid-value {
+      font-family: 'Courier New', monospace;
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      color: var(--white);
+      flex: 1;
+    }
+    .btn-copy {
+      flex-shrink: 0;
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.18);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: .45rem .9rem;
+      font-size: .78rem;
+      cursor: pointer;
+      transition: all .2s;
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .btn-copy:hover { background: rgba(255,255,255,.18); color: var(--white); }
+    .btn-copy.copied { background: rgba(52,211,153,.15); border-color: rgba(52,211,153,.4); color: #34d399; }
+    .cid-warn {
+      font-size: .76rem;
+      color: #fbbf24;
+      margin-top: .6rem;
+      display: flex;
+      align-items: flex-start;
+      gap: .4rem;
+      line-height: 1.5;
+    }
+    .cid-info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: .8rem;
+      font-size: .82rem;
+      text-align: left;
+    }
+    .cid-info-table td {
+      padding: .3rem .2rem;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      color: var(--text-muted);
+    }
+    .cid-info-table td:first-child { color: var(--text); font-weight: 500; width: 40%; }
+
+    .btn-enter {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .85rem 2rem;
+      background: linear-gradient(135deg, #a12c2f 0%, #7a1b1e 100%);
+      color: #f5eaea;
+      text-decoration: none;
+      border-radius: var(--r-sm);
+      font-size: .96rem;
+      font-weight: 600;
+      box-shadow: 0 4px 18px rgba(161,44,47,.32);
+      transition: all .22s;
+    }
+    .btn-enter:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(161,44,47,.5); }
+
+    /* ════════════════════
+       BOTTOM AREA
+       (lang switcher + footer)
+    ════════════════════ */
+    .bottom-area {
+      text-align: center;
+      padding: 1.2rem 1rem 1.5rem;
+      flex-shrink: 0;
+    }
+
+    /* Language switcher — styled select */
+    .lang-select-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .lang-icon {
+      color: var(--text-faint);
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+    .lang-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: .82rem;
+      font-family: var(--sans);
+      padding: .42rem 2rem .42rem .75rem;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .lang-select:hover { border-color: var(--border-light); }
+    .lang-select:focus { border-color: var(--gold); }
+    /* Custom chevron */
+    .lang-caret {
+      position: absolute;
+      right: .55rem; top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--text-faint);
+    }
+
+    .foot-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      font-size: .76rem;
+      color: var(--text-faint);
+      margin-bottom: .55rem;
+    }
+    .foot-links a {
+      color: var(--text-faint);
+      text-decoration: none;
+      transition: color .2s;
+      padding: .1rem .3rem;
+    }
+    .foot-links a:hover { color: var(--text-muted); }
+    .foot-sep {
+      color: var(--text-faint);
+      margin: 0 .1rem;
+      opacity: .5;
+    }
+
+    .foot-copy {
+      font-size: .72rem;
+      font-family: var(--mono);
+      color: var(--text-faint);
+      opacity: .7;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ────────────────────────── -->
+<header class="topbar">
+  <a href="index.html" class="topbar-logo">
+    <img src="logo.png" alt="AccessTansi">
+    <span class="topbar-logo-name">AccessTansi</span>
+  </a>
+
+  <div class="topbar-right">
+    <a href="https://app.accesstansi.id" class="topbar-login">
+      Sudah punya akun? <strong style="color:var(--gold);">Masuk</strong>
+    </a>
+    <button id="themeToggle" aria-label="Toggle tema">
+      <svg id="iconMoon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <svg id="iconSun" width="14" height="14" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        style="display:none">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- ── MAIN ──────────────────────────── -->
+<main class="main">
+  <div class="card">
+
+    <!-- FORM STATE -->
+    <div id="formState">
+      <div class="card-head">
+        <h1 class="card-title">Buat Akun AccessTansi</h1>
+        <p class="card-sub">
+          Sudah punya akun dari AccessTansi?
+          <a href="https://app.accesstansi.id">Masuk di sini</a>
+        </p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="alert" id="alertBox">
+        <span class="alert-ico"></span>
+        <span id="alertMsg"></span>
+      </div>
+
+      <form id="regForm" novalidate>
+
+        <div class="form-group">
+          <label class="form-label" for="fCompany">
+            <span class="lbl-txt">Nama perusahaan</span> <span class="req">*</span>
+          </label>
+          <input class="form-input" id="fCompany" type="text"
+            placeholder="" autocomplete="organization" maxlength="200">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fName">
+            <span class="lbl-txt">Nama lengkap</span> <span class="req">*</span>
+          </label>
+          <input class="form-input" id="fName" type="text"
+            placeholder="" autocomplete="name" maxlength="100">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fEmail">
+            <span class="lbl-txt">Email kerja</span> <span class="req">*</span>
+          </label>
+          <input class="form-input" id="fEmail" type="email"
+            placeholder="" autocomplete="email" maxlength="200">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fPassword">
+            <span class="lbl-txt">Password</span> <span class="req">*</span>
+          </label>
+          <div class="pw-wrap">
+            <input class="form-input" id="fPassword" type="password"
+              placeholder="" autocomplete="new-password">
+            <button type="button" class="pw-toggle" data-target="fPassword" aria-label="Tampilkan password">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="fConfirm">
+            <span class="lbl-txt">Konfirmasi password</span> <span class="req">*</span>
+          </label>
+          <div class="pw-wrap">
+            <input class="form-input" id="fConfirm" type="password"
+              placeholder="" autocomplete="new-password">
+            <button type="button" class="pw-toggle" data-target="fConfirm" aria-label="Tampilkan konfirmasi">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Terms checkbox — Mekari style -->
+        <div class="terms-wrap">
+          <label class="terms-row">
+            <input type="checkbox" id="fTerms">
+            <span class="terms-lbl">
+              Saya setuju dengan
+              <a href="mailto:hello@accesstansi.id">Ketentuan Penggunaan</a>
+              AccessTansi
+            </span>
+          </label>
+          <p class="terms-hint" id="termsHint">
+            Mohon tinjau dan terima Ketentuan Penggunaan
+            AccessTansi untuk menyelesaikan pembuatan akun
+          </p>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span class="spinner" id="spinner"></span>
+          <span id="submitTxt">Buat Akun</span>
+        </button>
+      </form>
+
+      <p class="card-foot">
+        Sudah punya akun?
+        <a href="https://app.accesstansi.id">Masuk di sini →</a>
+      </p>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div id="successState">
+      <div class="success-ico">🎉</div>
+      <h2 class="success-h" id="successH">Akun Berhasil Dibuat!</h2>
+      <p class="success-p">
+        Selamat datang di AccessTansi!<br>
+        Akun perusahaan <strong id="successCompany"></strong> sudah siap.
+      </p>
+
+      <!-- Company ID Card -->
+      <div class="cid-box">
+        <div class="cid-label">Company ID Anda</div>
+        <div class="cid-row">
+          <span class="cid-value" id="successCode">----</span>
+          <button class="btn-copy" id="btnCopy" type="button" onclick="copyCode()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span id="copyTxt">Salin</span>
+          </button>
+        </div>
+        <div class="cid-warn">
+          ⚠️ Simpan Company ID ini! Dibutuhkan setiap kali login bersama email dan password Anda.
+        </div>
+        <table class="cid-info-table" id="cidInfoTable">
+          <tr><td>Perusahaan</td><td id="infoCompany">—</td></tr>
+          <tr><td>Email Login</td><td id="infoEmail">—</td></tr>
+          <tr><td>Company ID</td><td id="infoCode">—</td></tr>
+        </table>
+      </div>
+
+      <a href="https://app.accesstansi.id" class="btn-enter" id="btnEnter">
+        Masuk ke AccessTansi →
+      </a>
+      <p class="card-foot" style="margin-top:1.3rem;">
+        Butuh bantuan?
+        <a href="mailto:hello@accesstansi.id">hello@accesstansi.id</a>
+      </p>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── BOTTOM ─────────────────────────── -->
+<div class="bottom-area">
+  <!-- Language switcher -->
+  <div class="lang-select-wrap">
+    <svg class="lang-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+    </svg>
+    <select class="lang-select" id="langSelect" aria-label="Pilih bahasa">
+      <option value="id">Bahasa Indonesia</option>
+      <option value="en">English</option>
+    </select>
+    <svg class="lang-caret" width="11" height="11" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </div>
+
+  <!-- Footer links -->
+  <div class="foot-links">
+    <a href="mailto:hello@accesstansi.id">Kebijakan Privasi</a>
+    <span class="foot-sep">•</span>
+    <a href="mailto:hello@accesstansi.id">Ketentuan Penggunaan</a>
+    <span class="foot-sep">•</span>
+    <a href="index.html">Tentang AccessTansi</a>
+  </div>
+
+  <p class="foot-copy">© 2026 AccessTansi</p>
+</div>
+
+<script>
+(function () {
+
+  /* ── Theme Toggle ──────────────────── */
+  const root = document.documentElement;
+  const moon = document.getElementById('iconMoon');
+  const sun  = document.getElementById('iconSun');
+  if (localStorage.getItem('at_theme') === 'light') {
+    root.classList.add('light');
+    moon.style.display = 'none';
+    sun.style.display  = 'block';
+  }
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const isLight = root.classList.toggle('light');
+    moon.style.display = isLight ? 'none'  : 'block';
+    sun.style.display  = isLight ? 'block' : 'none';
+    localStorage.setItem('at_theme', isLight ? 'light' : 'dark');
+  });
+
+  /* ── Show / Hide Password ──────────── */
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const inp = document.getElementById(btn.dataset.target);
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+    });
+  });
+
+  /* ── Language switcher ─────────────── */
+  const I18N = {
+    id: {
+      title:       'Buat Akun AccessTansi',
+      sub:         'Sudah punya akun dari AccessTansi?',
+      subLink:     'Masuk di sini',
+      lCompany:    'Nama perusahaan',
+      lName:       'Nama lengkap',
+      lEmail:      'Email kerja',
+      lPassword:   'Password',
+      lConfirm:    'Konfirmasi password',
+      termsLbl:    'Saya setuju dengan',
+      termsLink:   'Ketentuan Penggunaan',
+      termsName:   'AccessTansi',
+      termsHint:   'Mohon tinjau dan terima Ketentuan Penggunaan AccessTansi untuk menyelesaikan pembuatan akun',
+      submitBtn:   'Buat Akun',
+      footLogin:   'Sudah punya akun?',
+      footLoginLk: 'Masuk di sini →',
+      errCompany:  'Nama perusahaan wajib diisi.',
+      errName:     'Nama lengkap wajib diisi.',
+      errEmail:    'Masukkan alamat email yang valid.',
+      errPassword: 'Password minimal 8 karakter.',
+      errConfirm:  'Konfirmasi password tidak cocok.',
+      errTerms:    'Mohon tinjau dan terima Ketentuan Penggunaan AccessTansi untuk menyelesaikan pembuatan akun',
+      errServer:   'Pendaftaran gagal. Silakan coba lagi.',
+      errNetwork:  'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
+      loading:     'Memproses…',
+      successH:    'Akun Berhasil Dibuat!',
+      successP:    'Selamat datang di AccessTansi! 🎉',
+      successP2:   'Akun perusahaan',
+      successP3:   'sudah siap. Silakan masuk dan mulai kelola keuangan bisnis Anda.',
+      enterBtn:    'Masuk ke AccessTansi →',
+      helpTxt:     'Butuh bantuan?',
+    },
+    en: {
+      title:       'Create Your AccessTansi Account',
+      sub:         'Already have an AccessTansi account?',
+      subLink:     'Sign in here',
+      lCompany:    'Company name',
+      lName:       'Full name',
+      lEmail:      'Work email',
+      lPassword:   'Password',
+      lConfirm:    'Confirm password',
+      termsLbl:    'I agree to the',
+      termsLink:   'Terms of Service',
+      termsName:   'of AccessTansi',
+      termsHint:   'Please review and accept AccessTansi\'s Terms of Service to complete account creation',
+      submitBtn:   'Create Account',
+      footLogin:   'Already have an account?',
+      footLoginLk: 'Sign in →',
+      errCompany:  'Company name is required.',
+      errName:     'Full name is required.',
+      errEmail:    'Please enter a valid email address.',
+      errPassword: 'Password must be at least 8 characters.',
+      errConfirm:  'Passwords do not match.',
+      errTerms:    'Please review and accept AccessTansi\'s Terms of Service to complete account creation',
+      errServer:   'Registration failed. Please try again.',
+      errNetwork:  'Cannot connect to server. Please check your internet connection.',
+      loading:     'Processing…',
+      successH:    'Account Created!',
+      successP:    'Welcome to AccessTansi! 🎉',
+      successP2:   'Your company account',
+      successP3:   'is ready. Please sign in and start managing your finances.',
+      enterBtn:    'Sign in to AccessTansi →',
+      helpTxt:     'Need help?',
+    },
+  };
+
+  let lang = localStorage.getItem('at_lang') || 'id';
+  const langSelect = document.getElementById('langSelect');
+  langSelect.value = lang;
+
+  function applyLang(l) {
+    const t = I18N[l] || I18N.id;
+    document.querySelector('.card-title').textContent    = t.title;
+    document.querySelector('.card-sub').innerHTML =
+      t.sub + ' <a href="https://app.accesstansi.id">' + t.subLink + '</a>';
+    document.querySelector('label[for="fCompany"] .lbl-txt').textContent  = t.lCompany;
+    document.querySelector('label[for="fName"] .lbl-txt').textContent     = t.lName;
+    document.querySelector('label[for="fEmail"] .lbl-txt').textContent    = t.lEmail;
+    document.querySelector('label[for="fPassword"] .lbl-txt').textContent = t.lPassword;
+    document.querySelector('label[for="fConfirm"] .lbl-txt').textContent  = t.lConfirm;
+    document.querySelector('.terms-lbl').innerHTML =
+      t.termsLbl + ' <a href="mailto:hello@accesstansi.id">' + t.termsLink + '</a> ' + t.termsName;
+    document.getElementById('termsHint').textContent = t.termsHint;
+    document.getElementById('submitTxt').textContent = t.submitBtn;
+    const cf = document.querySelector('#formState .card-foot');
+    cf.innerHTML = t.footLogin + ' <a href="https://app.accesstansi.id">' + t.footLoginLk + '</a>';
+    document.querySelector('.success-h').textContent = t.successH;
+  }
+
+  langSelect.addEventListener('change', () => {
+    lang = langSelect.value;
+    localStorage.setItem('at_lang', lang);
+    applyLang(lang);
+  });
+
+  /* ── Alert ─────────────────────────── */
+  const alertBox = document.getElementById('alertBox');
+  const alertMsg = document.getElementById('alertMsg');
+  const alertIco = alertBox.querySelector('.alert-ico');
+  const termsHint = document.getElementById('termsHint');
+
+  function showErr(msg) {
+    alertIco.textContent = '⚠';
+    alertMsg.textContent = msg;
+    alertBox.className   = 'alert is-err';
+    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function hideAlert() { alertBox.className = 'alert'; }
+
+  function setErr(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('err');
+  }
+
+  /* Clear errors on input */
+  ['fCompany','fName','fEmail','fPassword','fConfirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => { el.classList.remove('err'); hideAlert(); });
+  });
+  document.getElementById('fTerms').addEventListener('change', () => {
+    document.getElementById('fTerms').classList.remove('err');
+    termsHint.classList.remove('show');
+  });
+
+  /* ── Form submit ────────────────────── */
+  const API = 'https://api.accesstansi.id';
+  const form        = document.getElementById('regForm');
+  const submitBtn   = document.getElementById('submitBtn');
+  const submitTxt   = document.getElementById('submitTxt');
+  const spinnerEl   = document.getElementById('spinner');
+  const formState   = document.getElementById('formState');
+  const successState = document.getElementById('successState');
+
+  function setLoading(on) {
+    submitBtn.disabled      = on;
+    spinnerEl.style.display = on ? 'block' : 'none';
+    const t = I18N[lang] || I18N.id;
+    submitTxt.textContent   = on ? t.loading : t.submitBtn;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideAlert();
+    termsHint.classList.remove('show');
+
+    const t           = I18N[lang] || I18N.id;
+    const companyName = document.getElementById('fCompany').value.trim();
+    const ownerName   = document.getElementById('fName').value.trim();
+    const ownerEmail  = document.getElementById('fEmail').value.trim();
+    const password    = document.getElementById('fPassword').value;
+    const confirm     = document.getElementById('fConfirm').value;
+    const agreed      = document.getElementById('fTerms').checked;
+
+    /* Client validation */
+    if (!companyName) { setErr('fCompany'); showErr(t.errCompany); return; }
+    if (!ownerName)   { setErr('fName');    showErr(t.errName);    return; }
+    if (!ownerEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
+      setErr('fEmail'); showErr(t.errEmail); return;
+    }
+    if (password.length < 8) { setErr('fPassword'); showErr(t.errPassword); return; }
+    if (password !== confirm) { setErr('fConfirm');  showErr(t.errConfirm);  return; }
+
+    /* Terms check — Mekari style: show hint below checkbox, NOT alert box */
+    if (!agreed) {
+      document.getElementById('fTerms').classList.add('err');
+      termsHint.classList.add('show');
+      termsHint.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
+    /* API */
+    setLoading(true);
+    try {
+      const res  = await fetch(API + '/api/auth/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ companyName, ownerName, ownerEmail, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showErr(data.error || t.errServer); setLoading(false); return; }
+
+      /* Success — tampilkan Company ID */
+      const code = data.companyCode || '—';
+      document.getElementById('successCompany').textContent = companyName;
+      document.getElementById('successCode').textContent    = code;
+      document.getElementById('infoCompany').textContent    = companyName;
+      document.getElementById('infoEmail').textContent      = ownerEmail;
+      document.getElementById('infoCode').textContent       = code;
+
+      formState.style.display    = 'none';
+      successState.style.display = 'block';
+    } catch (_) {
+      const t2 = I18N[lang] || I18N.id;
+      showErr(t2.errNetwork);
+      setLoading(false);
+    }
+  });
+
+  /* Apply saved lang on load (after DOM ready) */
+  applyLang(lang);
+
+})();
+
+/* Copy Company ID ke clipboard */
+function copyCode() {
+  const code = document.getElementById('successCode').textContent;
+  if (!code || code === '—' || code === '----') return;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn  = document.getElementById('btnCopy');
+    const txt  = document.getElementById('copyTxt');
+    btn.classList.add('copied');
+    txt.textContent = 'Tersalin!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      txt.textContent = 'Salin';
+    }, 2000);
+  }).catch(() => {
+    // Fallback untuk browser yang tidak support clipboard API
+    const el = document.createElement('textarea');
+    el.value = code;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    document.getElementById('copyTxt').textContent = 'Tersalin!';
+    setTimeout(() => { document.getElementById('copyTxt').textContent = 'Salin'; }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
